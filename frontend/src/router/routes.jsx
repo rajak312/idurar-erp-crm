@@ -20,6 +20,7 @@ const QuoteUpdate = lazy(() => import('@/pages/Quote/QuoteUpdate'));
 const Payment = lazy(() => import('@/pages/Payment/index'));
 const PaymentRead = lazy(() => import('@/pages/Payment/PaymentRead'));
 const PaymentUpdate = lazy(() => import('@/pages/Payment/PaymentUpdate'));
+const Query=lazy(()=>import('@/pages/Query/index'))
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
@@ -35,6 +36,10 @@ let routes = {
     {
       path: '/login',
       element: <Navigate to="/" />,
+    },
+    {
+      path:'/query',
+      element:<Query/>
     },
     {
       path: '/logout',

@@ -298,5 +298,31 @@ const request = {
       return errorHandler(error);
     }
   },
+  addNote: async ({ entity, id, jsonData }) => {
+    try {
+      includeToken();
+      const response = await axios.post(`${entity}/${id}/notes`, jsonData);
+      successHandler(response, {
+        notifyOnSuccess: true,
+        notifyOnFailed: true,
+      });
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
+  deleteNote: async ({ entity, id, noteId }) => {
+    try {
+      includeToken();
+      const response = await axios.post(`${entity}/${id}/notes/${noteId}`, jsonData);
+      successHandler(response, {
+        notifyOnSuccess: true,
+        notifyOnFailed: true,
+      });
+      return response.data;
+    } catch (error) {
+      return errorHandler(error);
+    }
+  },
 };
 export default request;

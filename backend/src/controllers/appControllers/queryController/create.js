@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Model = mongoose.model('Query');
 
 const createQuery = async (req, res) => {
-  const { customerId, description, status = 'Open', resolution = '', notes = [] } = req.body;
+  const { description, status = 'Open', resolution = '', notes = [] } = req.body;
 
   if (!description) {
     return res.status(400).json({
@@ -17,7 +17,6 @@ const createQuery = async (req, res) => {
   }));
 
   const query = new Model({
-    customerId,
     description,
     status,
     resolution,
