@@ -1,5 +1,6 @@
 "use server";
 import { Project } from "components/ProjectsTable";
+import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -38,8 +39,11 @@ export async function createProject(data: CreateProjectBody) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
+    next: {
+      tags: ["users"],
+    },
   });
-  if (!res.ok) throw new Error("Failed o create Project");
+  if (!res.ok) throw new Error("Failed to create Project");
   redirect("/");
 }
 
@@ -47,5 +51,25 @@ export async function updateProject(
   id: string,
   data: Partial<CreateProjectBody>
 ) {
-  const res = await fetch(`${baseUrl}/${id}`);
+  const res = await fetch(`${baseUrl}/api/projects/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to update Project");
+  redirect("/");
+}
+
+export async function deleteProject(id: string) {
+  const res = await fetch(`${baseUrl}/api/projects/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error("Failed to delete Project");
+  revalidateTag("users");
+}
+
+export async function getProjectById(id: string) {
+  const res = await fetch(`${baseUrl}/api/projects/${id}`);
+  if (!res.ok) throw new Error("Failed to fetch Project");
+  return res.json();
 }

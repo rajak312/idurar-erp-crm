@@ -7,6 +7,7 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 export interface Project {
@@ -42,7 +43,6 @@ export default function ProjectsTable({
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -105,15 +105,16 @@ export default function ProjectsTable({
             </button>
             {isOpen && (
               <div className="absolute right-0 mt-2 w-32 bg-gray-800 border border-gray-700 rounded shadow z-50">
-                <button
+                <Link
                   className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-700 text-gray-200"
                   onClick={() => {
                     onEdit?.(project);
                     setOpenDropdownId(null);
                   }}
+                  href={`projects/${project._id}/edit`}
                 >
                   Edit
-                </button>
+                </Link>
                 <button
                   className="block w-full px-4 py-2 text-left text-sm hover:bg-gray-700 text-red-400"
                   onClick={() => {
@@ -142,8 +143,6 @@ export default function ProjectsTable({
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-gray-100">Projects</h2>
-
       <div className="overflow-x-auto border border-gray-700 rounded-md shadow-sm bg-gray-900">
         <table className="min-w-full divide-y divide-gray-700 text-sm text-gray-200">
           <thead className="bg-gray-800">
