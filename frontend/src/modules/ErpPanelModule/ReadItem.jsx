@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Divider } from 'antd';
-
-import { Button, Row, Col, Descriptions, Statistic, Tag } from 'antd';
+import { Divider, Button, Row, Col, Descriptions, Statistic, message } from 'antd';
 import { PageHeader } from '@ant-design/pro-layout';
 import {
   EditOutlined,
@@ -9,6 +7,7 @@ import {
   CloseCircleOutlined,
   RetweetOutlined,
   MailOutlined,
+  FileSearchOutlined,
 } from '@ant-design/icons';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -20,7 +19,7 @@ import { generate as uniqueId } from 'shortid';
 import { selectCurrentItem } from '@/redux/erp/selectors';
 
 import { DOWNLOAD_BASE_URL } from '@/config/serverApiConfig';
-import { useMoney, useDate } from '@/settings';
+import { useMoney } from '@/settings';
 import useMail from '@/hooks/useMail';
 import { useNavigate } from 'react-router-dom';
 
@@ -84,6 +83,7 @@ export default function ReadItem({ config, selectedItem }) {
     credit: 0,
     number: 0,
     year: 0,
+    summary: '',
   };
 
   const [itemslist, setItemsList] = useState([]);
@@ -114,74 +114,65 @@ export default function ReadItem({ config, selectedItem }) {
     }
   }, [currentErp]);
 
+  const handleGenerateSummary = async () => {
+    try {
+      await dispatch(erp.generateSummary({ entity, id: currentErp._id }));
+
+      dispatch(erp.read({ entity, id: currentErp._id }));
+    } catch (err) {
+      message.error(err.message || 'Error generating summary');
+    }
+  };
+
   return (
     <>
       <PageHeader
-        onBack={() => {
-          navigate(`/${entity.toLowerCase()}`);
-        }}
+        onBack={() => navigate(`/${entity.toLowerCase()}`)}
         title={`${ENTITY_NAME} # ${currentErp.number}/${currentErp.year || ''}`}
         ghost={false}
         tags={[
           <span key="status">{currentErp.status && translate(currentErp.status)}</span>,
           currentErp.paymentStatus && (
-            <span key="paymentStatus">
-              {currentErp.paymentStatus && translate(currentErp.paymentStatus)}
-            </span>
+            <span key="paymentStatus">{translate(currentErp.paymentStatus)}</span>
           ),
         ]}
         extra={[
           <Button
-            key={`${uniqueId()}`}
-            onClick={() => {
-              navigate(`/${entity.toLowerCase()}`);
-            }}
+            key={uniqueId()}
+            onClick={() => navigate(`/${entity.toLowerCase()}`)}
             icon={<CloseCircleOutlined />}
           >
             {translate('Close')}
           </Button>,
           <Button
-            key={`${uniqueId()}`}
-            onClick={() => {
-              window.open(
-                `${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentErp._id}.pdf`,
-                '_blank'
-              );
-            }}
+            key={uniqueId()}
+            onClick={() =>
+              window.open(`${DOWNLOAD_BASE_URL}${entity}/${entity}-${currentErp._id}.pdf`, '_blank')
+            }
             icon={<FilePdfOutlined />}
           >
             {translate('Download PDF')}
           </Button>,
           <Button
-            key={`${uniqueId()}`}
+            key={uniqueId()}
             loading={mailInProgress}
-            onClick={() => {
-              send(currentErp._id);
-            }}
+            onClick={() => send(currentErp._id)}
             icon={<MailOutlined />}
           >
             {translate('Send by Email')}
           </Button>,
           <Button
-            key={`${uniqueId()}`}
-            onClick={() => {
-              dispatch(erp.convert({ entity, id: currentErp._id }));
-            }}
+            key={uniqueId()}
+            onClick={() => dispatch(erp.convert({ entity, id: currentErp._id }))}
             icon={<RetweetOutlined />}
             style={{ display: entity === 'quote' ? 'inline-block' : 'none' }}
           >
             {translate('Convert to Invoice')}
           </Button>,
-
           <Button
-            key={`${uniqueId()}`}
+            key={uniqueId()}
             onClick={() => {
-              dispatch(
-                erp.currentAction({
-                  actionType: 'update',
-                  data: currentErp,
-                })
-              );
+              dispatch(erp.currentAction({ actionType: 'update', data: currentErp }));
               navigate(`/${entity.toLowerCase()}/update/${currentErp._id}`);
             }}
             type="primary"
@@ -189,10 +180,11 @@ export default function ReadItem({ config, selectedItem }) {
           >
             {translate('Edit')}
           </Button>,
+          <Button key={uniqueId()} onClick={handleGenerateSummary} icon={<FileSearchOutlined />}>
+            {translate('Generate Summary')}
+          </Button>,
         ]}
-        style={{
-          padding: '20px 0px',
-        }}
+        style={{ padding: '20px 0px' }}
       >
         <Row>
           <Statistic title="Status" value={currentErp.status} />
@@ -202,16 +194,12 @@ export default function ReadItem({ config, selectedItem }) {
               amount: currentErp.subTotal,
               currency_code: currentErp.currency,
             })}
-            style={{
-              margin: '0 32px',
-            }}
+            style={{ margin: '0 32px' }}
           />
           <Statistic
             title={translate('Total')}
             value={moneyFormatter({ amount: currentErp.total, currency_code: currentErp.currency })}
-            style={{
-              margin: '0 32px',
-            }}
+            style={{ margin: '0 32px' }}
           />
           <Statistic
             title={translate('Paid')}
@@ -219,12 +207,11 @@ export default function ReadItem({ config, selectedItem }) {
               amount: currentErp.credit,
               currency_code: currentErp.currency,
             })}
-            style={{
-              margin: '0 32px',
-            }}
+            style={{ margin: '0 32px' }}
           />
         </Row>
       </PageHeader>
+
       <Divider dashed />
       <Descriptions title={`Client : ${currentErp.client.name}`}>
         <Descriptions.Item label={translate('Address')}>{client.address}</Descriptions.Item>
@@ -232,82 +219,66 @@ export default function ReadItem({ config, selectedItem }) {
         <Descriptions.Item label={translate('Phone')}>{client.phone}</Descriptions.Item>
       </Descriptions>
       <Divider />
+
       <Row gutter={[12, 0]}>
-        <Col className="gutter-row" span={11}>
-          <p>
-            <strong>{translate('Product')}</strong>
-          </p>
+        <Col span={11}>
+          <strong>{translate('Product')}</strong>
         </Col>
-        <Col className="gutter-row" span={4}>
-          <p
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <strong>{translate('Price')}</strong>
-          </p>
+        <Col span={4} style={{ textAlign: 'right' }}>
+          <strong>{translate('Price')}</strong>
         </Col>
-        <Col className="gutter-row" span={4}>
-          <p
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <strong>{translate('Quantity')}</strong>
-          </p>
+        <Col span={4} style={{ textAlign: 'right' }}>
+          <strong>{translate('Quantity')}</strong>
         </Col>
-        <Col className="gutter-row" span={5}>
-          <p
-            style={{
-              textAlign: 'right',
-            }}
-          >
-            <strong>{translate('Total')}</strong>
-          </p>
+        <Col span={5} style={{ textAlign: 'right' }}>
+          <strong>{translate('Total')}</strong>
         </Col>
         <Divider />
       </Row>
+
       {itemslist.map((item) => (
-        <Item key={item._id} item={item} currentErp={currentErp}></Item>
+        <Item key={item._id} item={item} currentErp={currentErp} />
       ))}
-      <div
-        style={{
-          width: '300px',
-          float: 'right',
-          textAlign: 'right',
-          fontWeight: '700',
-        }}
-      >
+
+      <div style={{ width: '300px', float: 'right', textAlign: 'right', fontWeight: '700' }}>
         <Row gutter={[12, -5]}>
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>{translate('Sub Total')} :</p>
           </Col>
-
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>
               {moneyFormatter({ amount: currentErp.subTotal, currency_code: currentErp.currency })}
             </p>
           </Col>
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>
               {translate('Tax Total')} ({currentErp.taxRate} %) :
             </p>
           </Col>
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>
               {moneyFormatter({ amount: currentErp.taxTotal, currency_code: currentErp.currency })}
             </p>
           </Col>
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>{translate('Total')} :</p>
           </Col>
-          <Col className="gutter-row" span={12}>
+          <Col span={12}>
             <p>
               {moneyFormatter({ amount: currentErp.total, currency_code: currentErp.currency })}
             </p>
           </Col>
         </Row>
       </div>
+
+      {currentErp.summary && (
+        <div
+          style={{ clear: 'both', marginTop: '40px', padding: '15px', borderTop: '1px solid #ddd' }}
+        >
+          <h3>{translate('Summary of Notes')}</h3>
+          <p style={{ fontStyle: 'italic', color: '#555' }}>{currentErp.summary}</p>
+        </div>
+      )}
     </>
   );
 }

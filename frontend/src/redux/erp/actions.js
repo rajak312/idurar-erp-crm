@@ -296,4 +296,9 @@ export const erp = {
     async () => {
       await request.convert({ entity, id });
     },
+
+  generateSummary:
+    ({ entity, id }) =>
+    async () =>
+      await request.generateSummary({ entity, id }),
 };
