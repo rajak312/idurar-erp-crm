@@ -1,15 +1,19 @@
 export const fields = {
-  _id: {
-    type: 'id',
-    label: 'ID',
-    showInForm: true,
-    disableForUpdate: true,
+  name: {
+    type: 'text',
+    label: 'Customer Name',
     showInTable: true,
   },
   description: {
     type: 'textarea',
     label: 'Description',
     required: true,
+  },
+  createdAt: {
+    type: 'date',
+    label: 'Created At',
+    showInForm: false,
+    showInTable: true,
   },
   status: {
     type: 'select',
@@ -26,18 +30,7 @@ export const fields = {
     type: 'textarea',
     label: 'Resolution',
   },
-  // notes: {
-  //   type: 'array',
-  //   label: 'Notes',
-  //   disableForForm: true, // Not shown in the form directly
-  //   showInTable: false,
-  // },
-  // createdAt: {
-  //   type: 'date',
-  //   label: 'Created At',
-  //   showInForm: false,
-  //   showInTable: true,
-  // },
+
   // updatedAt: {
   //   type: 'date',
   //   label: 'Updated At',

@@ -25,8 +25,9 @@ const routerApp = (entity, controller) => {
   }
 
   if (entity === 'query') {
-    router.route(`${entity}/:id/notes/:noteId`).delete(catchErrors(controller['deleteNote']));
-    router.route(`${entity}/:id/notes`).post(catchErrors(controller['addNote']));
+    router.route(`/${entity}/:id/notes/delete/:noteId`).delete(catchErrors(controller['remove']));
+    router.route(`/${entity}/:id/notes/create`).post(catchErrors(controller['add']));
+    router.route(`/${entity}/:id/notes/list`).get(catchErrors(controller['notes']));
   }
 };
 

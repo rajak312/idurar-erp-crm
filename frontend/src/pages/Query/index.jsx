@@ -2,9 +2,12 @@ import CrudModule from '@/modules/CrudModule/CrudModule';
 import DynamicForm from '@/forms/DynamicForm';
 import { fields } from './config';
 import useLanguage from '@/locale/useLanguage';
+import { EditOutlined, FileSearchOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 
-export default function Customer() {
+export default function Query() {
   const translate = useLanguage();
+  const navigate = useNavigate();
   const entity = 'query';
 
   const searchConfig = {
@@ -33,13 +36,23 @@ export default function Customer() {
     deleteModalLabels,
   };
 
-  const { _id, ...createFields } = fields;
+  const { _id, name, createdAt, ...createFields } = fields;
 
   return (
     <CrudModule
       createForm={<DynamicForm fields={createFields} />}
       updateForm={<DynamicForm fields={fields} isUpdateForm />}
       config={config}
+      extra={[
+        {
+          label: translate('Notes'),
+          key: 'queryDetail',
+          icon: <FileSearchOutlined />,
+          onClick: (record) => {
+            navigate(`/query/${record._id}/notes`);
+          },
+        },
+      ]}
     />
   );
 }

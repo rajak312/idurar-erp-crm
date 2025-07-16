@@ -7,12 +7,14 @@ const list = require('./paginatedList');
 const read = require('./read');
 const update = require('./update');
 const addNote = require('./addNote');
+const getNotes = require('./notesPaginatedList');
 
 methods.create = create;
 methods.read = read;
 methods.list = list;
 methods.update = update;
-methods.addNote = addNote;
-methods.deleteNote = remove;
+methods.add = addNote;
+methods.remove = remove;
+methods.notes = getNotes;
 
 module.exports = methods;

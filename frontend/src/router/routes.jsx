@@ -20,7 +20,8 @@ const QuoteUpdate = lazy(() => import('@/pages/Quote/QuoteUpdate'));
 const Payment = lazy(() => import('@/pages/Payment/index'));
 const PaymentRead = lazy(() => import('@/pages/Payment/PaymentRead'));
 const PaymentUpdate = lazy(() => import('@/pages/Payment/PaymentUpdate'));
-const Query=lazy(()=>import('@/pages/Query/index'))
+const Query = lazy(() => import('@/pages/Query/index'));
+const Notes = lazy(() => import('@/pages/Notes'));
 
 const Settings = lazy(() => import('@/pages/Settings/Settings'));
 const PaymentMode = lazy(() => import('@/pages/PaymentMode'));
@@ -38,8 +39,12 @@ let routes = {
       element: <Navigate to="/" />,
     },
     {
-      path:'/query',
-      element:<Query/>
+      path: '/query',
+      element: <Query />,
+    },
+    {
+      path: '/query/:id/notes',
+      element: <Notes />,
     },
     {
       path: '/logout',

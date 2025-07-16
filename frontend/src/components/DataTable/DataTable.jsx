@@ -47,6 +47,13 @@ export default function DataTable({ config, extra = [] }) {
   const { moneyFormatter } = useMoney();
   const { dateFormat } = useDate();
 
+  const extraActionMap = {};
+  extra.forEach((item) => {
+    if (item.key && typeof item.onClick === 'function') {
+      extraActionMap[item.key] = item.onClick;
+    }
+  });
+
   const items = [
     {
       label: translate('Show'),
@@ -58,7 +65,7 @@ export default function DataTable({ config, extra = [] }) {
       key: 'edit',
       icon: <EditOutlined />,
     },
-    ...extra,
+    ...extra.map(({ label, key, icon }) => ({ label, key, icon })),
     {
       type: 'divider',
     },
@@ -130,6 +137,9 @@ export default function DataTable({ config, extra = [] }) {
                   break;
 
                 default:
+                  if (extraActionMap[key]) {
+                    extraActionMap[key](record);
+                  }
                   break;
               }
               // else if (key === '2')handleCloseTask
