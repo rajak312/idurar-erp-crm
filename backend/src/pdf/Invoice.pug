@@ -302,11 +302,15 @@ html
           tbody
             each item in model.items
               tr
-                td.service #{item.itemName}
-                  span #{item.description}
-                td.qty #{item.quantity}  
-                td.unit  #{moneyFormatter({amount:item.price})}
-                td.total #{moneyFormatter({amount:item.total})}
+                td.service
+                  | #{item.itemName}
+                  if item.description
+                    span #{item.description}
+                  if item.note
+                    span(style="font-style: italic; color: #777;") #{translate('Note')}: #{item.note}
+                td.qty #{item.quantity}
+                td.unit #{moneyFormatter({ amount: item.price })}
+                td.total #{moneyFormatter({ amount: item.total })}
             tr
               td(colspan='3') #{translate('SUB TOTAL')}
               td.total #{moneyFormatter({amount:model.subTotal})}
@@ -315,8 +319,7 @@ html
               td.total #{moneyFormatter({amount:model.taxTotal})}
             tr
               td.grand.total(colspan='3')  #{translate('TOTAL')} 
-              td.grand.total #{moneyFormatter({amount:model.total})}
-        
+              td.grand.total #{moneyFormatter({amount:model.total})}        
       .col.col-24
           .space     
       footer.footer-invoice

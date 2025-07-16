@@ -26,6 +26,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Item = ({ item, currentErp }) => {
   const { moneyFormatter } = useMoney();
+
   return (
     <Row gutter={[12, 0]} key={item._id}>
       <Col className="gutter-row" span={11}>
@@ -33,32 +34,22 @@ const Item = ({ item, currentErp }) => {
           <strong>{item.itemName}</strong>
         </p>
         <p>{item.description}</p>
+        {item.note && (
+          <p style={{ fontStyle: 'italic', color: '#888' }}>
+            <strong>Note:</strong> {item.note}
+          </p>
+        )}
       </Col>
       <Col className="gutter-row" span={4}>
-        <p
-          style={{
-            textAlign: 'right',
-          }}
-        >
+        <p style={{ textAlign: 'right' }}>
           {moneyFormatter({ amount: item.price, currency_code: currentErp.currency })}
         </p>
       </Col>
       <Col className="gutter-row" span={4}>
-        <p
-          style={{
-            textAlign: 'right',
-          }}
-        >
-          {item.quantity}
-        </p>
+        <p style={{ textAlign: 'right' }}>{item.quantity}</p>
       </Col>
       <Col className="gutter-row" span={5}>
-        <p
-          style={{
-            textAlign: 'right',
-            fontWeight: '700',
-          }}
-        >
+        <p style={{ textAlign: 'right', fontWeight: '700' }}>
           {moneyFormatter({ amount: item.total, currency_code: currentErp.currency })}
         </p>
       </Col>
