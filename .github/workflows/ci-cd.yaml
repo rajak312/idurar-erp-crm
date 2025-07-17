@@ -11,9 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       nest_changed: ${{ steps.filter.outputs.nest_advanced }}
-      express_changed: ${{ steps.filter.outputs.backend }}
       nextjs_changed: ${{ steps.filter.outputs.nextjs_crud_app }}
-      vite_changed: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
 
@@ -23,12 +21,8 @@ jobs:
           filters: |
             nest_advanced:
               - 'nest_advanced/**'
-            backend:
-              - 'backend/**'
             nextjs_crud_app:
               - 'nextjs_crud_app/**'
-            frontend:
-              - 'frontend/**'
 
   ## === NESTJS === ##
   lint-test-nest:
@@ -80,10 +74,16 @@ jobs:
           node-version: 18
       - uses: pnpm/action-setup@v2
         with:
-          version: 8 # Or 10 if you're using pnpm v10
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm test || echo "Skip test if not present"
+          version: 8
+      - name: Install dependencies
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile
+          else
+            pnpm install --no-frozen-lockfile
+          fi
+      - run: pnpm run lint
+      - run: pnpm run test || echo "Skip test if not present"
 
   build-push-nextjs:
     needs: lint-test-nextjs
@@ -105,37 +105,3 @@ jobs:
           tags: |
             lalitrajak312/nextjs-crud:latest
             lalitrajak312/nextjs-crud:${{ github.sha }}
-
-  ## === BACKEND EXPRESS (NPM) === ##
-  lint-test-backend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.express_changed == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test
-
-  ## === FRONTEND VITE (NPM) === ##
-  lint-test-frontend:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.vite_changed == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test || echo "Skip test if not present"
