@@ -1,0 +1,26 @@
+FROM node:20.9.0-alpine AS deps
+WORKDIR /tmp
+RUN npm install -g npm@10.2.4
+COPY package*.json ./
+RUN npm ci
+
+FROM node:20.9.0-alpine AS runner
+WORKDIR /app
+
+ENV DATABASE="mongodb://localhost:27017/" \
+    RESEND_API="your resend_api" \
+    OPENAI_API_KEY="your open_ai api key" \
+    JWT_SECRET="your_private_jwt_secret_key" \
+    NODE_ENV="production" \
+    OPENSSL_CONF="/dev/null" \
+    PUBLIC_SERVER_FILE="http://localhost:8888/" \
+    GEMINI_API_KEY="" \
+    PORT=8888
+
+COPY --from=deps /tmp/node_modules ./node_modules
+COPY . .
+
+RUN npm run setup
+
+EXPOSE 8888
+CMD ["node", "src/server.js"]
