@@ -31,7 +31,7 @@ jobs:
               - 'frontend/**'
 
   ## === NESTJS === ##
-  lint-nest:
+  build-nest:
     needs: detect-changes
     if: needs.detect-changes.outputs.nest_changed == 'true'
     runs-on: ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
       - run: npm run lint
 
   test-nest:
-    needs: lint-nest
+    needs: build-nest
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -60,7 +60,7 @@ jobs:
       - run: npm ci
       - run: npm run test
 
-  build-push-nest:
+  deploy-nest:
     needs: test-nest
     if: github.ref == 'refs/heads/feature/nest_advanced'
     runs-on: ubuntu-latest
@@ -79,7 +79,7 @@ jobs:
             lalitrajak312/nest-advanced:${{ github.sha }}
 
   ## === NEXT.JS === ##
-  lint-nextjs:
+  build-nextjs:
     needs: detect-changes
     if: needs.detect-changes.outputs.nextjs_changed == 'true'
     runs-on: ubuntu-latest
@@ -98,7 +98,7 @@ jobs:
       - run: pnpm run lint
 
   test-nextjs:
-    needs: lint-nextjs
+    needs: build-nextjs
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -114,7 +114,7 @@ jobs:
       - run: pnpm install --no-frozen-lockfile
       - run: pnpm run test || echo "Skipping tests if not present"
 
-  build-push-nextjs:
+  deploy-nextjs:
     needs: test-nextjs
     if: github.ref == 'refs/heads/feature/nest_advanced'
     runs-on: ubuntu-latest
@@ -140,7 +140,7 @@ jobs:
             NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
 
   ## === EXPRESS SERVER === ##
-  build-push-express:
+  deploy-express:
     needs: detect-changes
     if: needs.detect-changes.outputs.express_changed == 'true' && github.ref == 'refs/heads/feature/nest_advanced'
     runs-on: ubuntu-latest
@@ -161,7 +161,7 @@ jobs:
             MONGODB_URI=${{ secrets.MONGODB_URI }}
 
   ## === FRONTEND === ##
-  build-push-frontend:
+  deploy-frontend:
     needs: detect-changes
     if: needs.detect-changes.outputs.frontend_changed == 'true' && github.ref == 'refs/heads/feature/nest_advanced'
     runs-on: ubuntu-latest

@@ -8,6 +8,15 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY . .
+
+ARG MONGODB_URI
+ARG NEXTAUTH_SECRET
+ARG NEXTAUTH_URL
+
+ENV MONGODB_URI=$MONGODB_URI \
+    NEXTAUTH_SECRET=$NEXTAUTH_SECRET \
+    NEXTAUTH_URL=$NEXTAUTH_URL
+
 RUN pnpm build
 
 FROM node:20-alpine AS runner
@@ -15,11 +24,6 @@ FROM node:20-alpine AS runner
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
-
-ENV NODE_ENV=production \
-    MONGODB_URI=mongodb://localhost:27017/nextjs_crud \
-    NEXTAUTH_SECRET=changeme \
-    NEXTAUTH_URL=http://localhost:3000 
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
