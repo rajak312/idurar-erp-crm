@@ -7,9 +7,9 @@ RUN npm ci
 FROM node:20.9.0-alpine AS runner
 WORKDIR /app
 
-ENV DATABASE="mongodb://localhost:27017/" \
+ENV DATABASE="mongodb://mongo:27017/idurar-erp-crm" \
     RESEND_API="your resend_api" \
-    OPENAI_API_KEY="your open_ai api key" \
+    OPENAI_API_KEY="your_open_ai_api_key" \
     JWT_SECRET="your_private_jwt_secret_key" \
     NODE_ENV="production" \
     OPENSSL_CONF="/dev/null" \
@@ -20,7 +20,9 @@ ENV DATABASE="mongodb://localhost:27017/" \
 COPY --from=deps /tmp/node_modules ./node_modules
 COPY . .
 
-RUN npm run setup
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8888
-CMD ["node", "src/server.js"]
+
+ENTRYPOINT ["sh", "./entrypoint.sh"]

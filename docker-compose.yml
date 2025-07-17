@@ -45,8 +45,8 @@ services:
       - "8888:8888"
     environment:
       - DATABASE=mongodb://mongo:27017/idurar-erp-crm
-      - RESEND_API=your resend_api
-      - OPENAI_API_KEY=your open_ai api key
+      - RESEND_API=your_resend_api
+      - OPENAI_API_KEY=your_openai_api_key
       - JWT_SECRET=your_private_jwt_secret_key
       - NODE_ENV=production
       - OPENSSL_CONF=/dev/null
@@ -54,6 +54,18 @@ services:
       - GEMINI_API_KEY=
     depends_on:
       - mongo
+
+  vite_frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: vite-frontend-app
+    ports:
+      - "3000:4173"
+    environment:
+      - VITE_FILE_BASE_URL=http://localhost:8888/
+      - VITE_BACKEND_SERVER=http://localhost:8888/
+      - PROD=false
 
 volumes:
   mongo-data:

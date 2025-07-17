@@ -20,7 +20,7 @@ export default ({ mode }) => {
       },
     },
     server: {
-      port: 3000,
+      port: 7000,
       proxy: {
         '/api': {
           target: proxy_url,

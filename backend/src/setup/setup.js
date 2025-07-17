@@ -3,18 +3,26 @@ require('dotenv').config({ path: '.env.local' });
 const { globSync } = require('glob');
 const fs = require('fs');
 const { generate: uniqueId } = require('shortid');
-
 const mongoose = require('mongoose');
+
 mongoose.connect(process.env.DATABASE);
 
 async function setupApp() {
   try {
     const Admin = require('../models/coreModels/Admin');
     const AdminPassword = require('../models/coreModels/AdminPassword');
-    const newAdminPassword = new AdminPassword();
+    const Setting = require('../models/coreModels/Setting');
+    const PaymentMode = require('../models/appModels/PaymentMode');
+    const Taxes = require('../models/appModels/Taxes');
+
+    const existingAdmin = await Admin.findOne({ email: 'admin@demo.com' });
+    if (existingAdmin) {
+      console.log('⚠️ Admin already exists. Skipping setup.');
+      process.exit(0);
+    }
 
     const salt = uniqueId();
-
+    const newAdminPassword = new AdminPassword();
     const passwordHash = newAdminPassword.generateHash(salt, 'admin123');
 
     const demoAdmin = {
@@ -24,54 +32,54 @@ async function setupApp() {
       enabled: true,
       role: 'owner',
     };
-    const result = await new Admin(demoAdmin).save();
 
-    const AdminPasswordData = {
+    const createdAdmin = await new Admin(demoAdmin).save();
+
+    const adminPasswordData = {
       password: passwordHash,
       emailVerified: true,
       salt: salt,
-      user: result._id,
+      user: createdAdmin._id,
     };
-    await new AdminPassword(AdminPasswordData).save();
-
-    console.log('👍 Admin created : Done!');
-
-    const Setting = require('../models/coreModels/Setting');
-
-    const settingFiles = [];
+    await new AdminPassword(adminPasswordData).save();
+    console.log('✅ Admin created');
 
     const settingsFiles = globSync('./src/setup/defaultSettings/**/*.json');
+    const settingData = [];
 
     for (const filePath of settingsFiles) {
       const file = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
-      settingFiles.push(...file);
+      settingData.push(...file);
     }
 
-    await Setting.insertMany(settingFiles);
+    if (settingData.length) {
+      await Setting.insertMany(settingData);
+      console.log('✅ Settings inserted');
+    }
 
-    console.log('👍 Settings created : Done!');
+    const existingTax = await Taxes.findOne({ taxName: 'Tax 0%' });
+    if (!existingTax) {
+      await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
+      console.log('✅ Taxes created');
+    }
 
-    const PaymentMode = require('../models/appModels/PaymentMode');
-    const Taxes = require('../models/appModels/Taxes');
+    const existingPayment = await PaymentMode.findOne({ name: 'Default Payment' });
+    if (!existingPayment) {
+      await PaymentMode.insertMany([
+        {
+          name: 'Default Payment',
+          description: 'Default Payment Mode (Cash , Wire Transfert)',
+          isDefault: true,
+        },
+      ]);
+      console.log('✅ PaymentMode created');
+    }
 
-    await Taxes.insertMany([{ taxName: 'Tax 0%', taxValue: '0', isDefault: true }]);
-    console.log('👍 Taxes created : Done!');
-
-    await PaymentMode.insertMany([
-      {
-        name: 'Default Payment',
-        description: 'Default Payment Mode (Cash , Wire Transfert)',
-        isDefault: true,
-      },
-    ]);
-    console.log('👍 PaymentMode created : Done!');
-
-    console.log('🥳 Setup completed :Success!');
-    process.exit();
-  } catch (e) {
-    console.log('\n🚫 Error! The Error info is below');
-    console.log(e);
-    process.exit();
+    console.log('🎉 Initial Setup Completed!');
+    process.exit(0);
+  } catch (err) {
+    console.error('❌ Setup failed:', err);
+    process.exit(1);
   }
 }
 
