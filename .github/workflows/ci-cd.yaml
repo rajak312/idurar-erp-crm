@@ -65,26 +65,7 @@ jobs:
             lalitrajak312/nest-advanced:latest
             lalitrajak312/nest-advanced:${{ github.sha }}
 
-  ## === NEXT.JS CRUD APP === ##
-  lint-test-nextjs:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.nextjs_changed == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: nextjs_crud_app
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 10.13.1
-      - run: pnpm install --no-frozen-lockfile
-      - run: pnpm run lint
-      - run: pnpm run test || echo "Skip test if not present"
-
+   ## === NEXT.JS CRUD APP === ##
   build-push-nextjs:
     needs: lint-test-nextjs
     runs-on: ubuntu-latest
@@ -105,6 +86,10 @@ jobs:
           tags: |
             lalitrajak312/nextjs-crud:latest
             lalitrajak312/nextjs-crud:${{ github.sha }}
+          build-args: |
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
+            NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
 
   ## === EXPRESS SERVER === ##
   build-push-express:
@@ -124,6 +109,8 @@ jobs:
           tags: |
             lalitrajak312/express-server:latest
             lalitrajak312/express-server:${{ github.sha }}
+          build-args: |
+            MONGODB_URI=${{ secrets.MONGODB_URI }}
 
   ## === FRONTEND === ##
   build-push-frontend:
@@ -143,3 +130,5 @@ jobs:
           tags: |
             lalitrajak312/frontend:latest
             lalitrajak312/frontend:${{ github.sha }}
+          build-args: |
+            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
