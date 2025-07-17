@@ -1,28 +1,26 @@
-name: Monorepo CI/CD
+name: Build and Push Docker Images
 
 on:
-  pull_request:
-    branches: [master]
   push:
-    branches: [feature/nest_advanced]
+    branches:
+      - feature/nest_advanced
+  pull_request:
+    branches:
+      - feature/nest_advanced
 
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      nest_changed: ${{ steps.filter.outputs.nest_advanced }}
       nextjs_changed: ${{ steps.filter.outputs.nextjs_crud_app }}
       express_changed: ${{ steps.filter.outputs.express_server }}
       frontend_changed: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
-
-      - id: filter
-        uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
           filters: |
-            nest_advanced:
-              - 'nest_advanced/**'
             nextjs_crud_app:
               - 'nextjs_crud_app/**'
             express_server:
@@ -30,46 +28,11 @@ jobs:
             frontend:
               - 'frontend/**'
 
-  ## === NESTJS === ##
-  lint-test-nest:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.nest_changed == 'true'
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: nest_advanced
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test
-
-  build-push-nest:
-    needs: lint-test-nest
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/feature/nest_advanced'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-      - uses: docker/build-push-action@v5
-        with:
-          context: ./nest_advanced
-          push: true
-          tags: |
-            lalitrajak312/nest-advanced:latest
-            lalitrajak312/nest-advanced:${{ github.sha }}
-
-   ## === NEXT.JS CRUD APP === ##
+  ## === NEXT.JS CRUD APP === ##
   build-push-nextjs:
-    needs: lint-test-nextjs
+    needs: detect-changes
+    if: needs.detect-changes.outputs.nextjs_changed == 'true'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/feature/nest_advanced'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -94,7 +57,7 @@ jobs:
   ## === EXPRESS SERVER === ##
   build-push-express:
     needs: detect-changes
-    if: needs.detect-changes.outputs.express_changed == 'true' && github.ref == 'refs/heads/feature/nest_advanced'
+    if: needs.detect-changes.outputs.express_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -115,7 +78,7 @@ jobs:
   ## === FRONTEND === ##
   build-push-frontend:
     needs: detect-changes
-    if: needs.detect-changes.outputs.frontend_changed == 'true' && github.ref == 'refs/heads/feature/nest_advanced'
+    if: needs.detect-changes.outputs.frontend_changed == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -130,5 +93,3 @@ jobs:
           tags: |
             lalitrajak312/frontend:latest
             lalitrajak312/frontend:${{ github.sha }}
-          build-args: |
-            NEXTAUTH_URL=${{ secrets.NEXTAUTH_URL }}
