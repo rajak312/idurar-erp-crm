@@ -4,8 +4,14 @@ import { useSession } from "next-auth/react";
 import { createContext, useContext, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+export interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
 type AuthContextType = {
-  user: any | null;
+  user: User | null;
   status: "loading" | "authenticated" | "unauthenticated";
 };
 

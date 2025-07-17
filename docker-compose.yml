@@ -16,9 +16,23 @@ services:
       dockerfile: Dockerfile
     container_name: nest-advanced-app
     ports:
-      - 5000:5000
+      - "5000:5000"
     environment:
       - MONGO_URI=mongodb://mongo:27017/idurar-erp-crm
+    depends_on:
+      - mongo
+
+  nextjs-app:
+    build:
+      context: ./nextjs_crud_app
+      dockerfile: Dockerfile
+    container_name: nextjs-app
+    ports:
+      - "4000:3000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/nextjs_crud
+      - NEXTAUTH_SECRET=f3GcOhpu676DqOB+7vdScsOi3riAVgcDWJyov99vj9k=
+      - NEXTAUTH_URL=http://localhost:4000
     depends_on:
       - mongo
 

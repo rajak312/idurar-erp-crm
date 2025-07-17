@@ -12,7 +12,7 @@ export interface FetchProjectsOptions {
   status?: string;
 }
 
-export interface CreateProjectBody extends Omit<Project, "_id" | "createdAt"> {}
+export type CreateProjectBody = Omit<Project, "_id" | "createdAt">;
 
 export async function fetchProjects(options: FetchProjectsOptions = {}) {
   const { page = 1, limit = 5, q, status } = options;

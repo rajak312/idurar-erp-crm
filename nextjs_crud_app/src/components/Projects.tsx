@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { deleteProject, fetchProjects } from "lib/action";
 import ProjectsTable from "./ProjectsTable";
 import type { Project } from "./ProjectsTable";
@@ -14,7 +14,7 @@ export function Projects() {
   const [status, setStatus] = useState<Project["status"] | "">("");
   const [isPending, startTransition] = useTransition();
 
-  const loadProjects = () => {
+  const loadProjects = useCallback(() => {
     startTransition(async () => {
       try {
         const result = await fetchProjects({ page, limit, status });
@@ -24,16 +24,16 @@ export function Projects() {
         console.error("Error fetching projects", err);
       }
     });
-  };
+  }, [page, limit, status]);
+
+  useEffect(() => {
+    loadProjects();
+  }, [loadProjects]);
 
   async function handleDeleteProject(id: string) {
     deleteProject(id);
     loadProjects();
   }
-
-  useEffect(() => {
-    loadProjects();
-  }, [page, status]);
 
   return (
     <div className="p-4 max-w-6xl mx-auto text-white">
