@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo
+    container_name: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  nest-advanced:
+    build:
+      context: ./nest_advanced
+      dockerfile: Dockerfile
+    container_name: nest-advanced-app
+    ports:
+      - 5000:5000
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/idurar-erp-crm
+    depends_on:
+      - mongo
+
+volumes:
+  mongo-data:
