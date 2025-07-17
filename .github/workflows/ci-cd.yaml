@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [master]
   push:
-    branches: [master]
+    branches: [feature/nest_advanced]
 
 jobs:
   detect-changes:
